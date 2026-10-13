@@ -66,7 +66,25 @@ function App() {
     <div className="min-h-screen bg-gray-50 p-8 text-gray-800">
       <div className="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-md">
         <h1 className="text-2xl font-bold mb-6 text-center text-blue-600">Quản Lý Người Dùng</h1>
-
+        <div className="mb-8 p-5 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg shadow-sm">
+          <h2 className="text-lg font-bold text-blue-800 mb-3 border-b border-blue-200 pb-2">
+            📌 Thông Tin Nhóm Thực Hiện
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-gray-700 mb-1"><span className="font-semibold w-24 inline-block">Tên Nhóm:</span> Nhóm 7</p>
+              <p className="text-gray-700 mb-1"><span className="font-semibold w-24 inline-block">Tên môn:</span> Xây dựng phần mềm Web</p>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-700 mb-1">Thành viên:</p>
+              <ul className="list-disc list-inside text-gray-600 space-y-1 ml-2">
+                <li><strong>Hồ Quốc Thịnh</strong>-DH52201492</li>
+                <li><strong>Đới Công Luận</strong>-DH52201039</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        {/* ------------------------------ */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
           <input
             type="text"
