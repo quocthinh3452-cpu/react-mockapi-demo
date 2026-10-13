@@ -6,17 +6,18 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'asc' });
 
-  // Fetch data từ Mock API
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch('https://6a830a1ecb486d2434033464.mockapi.io/nguoidung');
         const result = await response.json();
-        // MockAPI đôi khi không có sẵn trường 'price', ta map thêm 1 trường random giá để test tính năng sort theo giá nếu API thực tế của bạn có
+        
+        // Tạo thêm trường price giả lập để phục vụ tính năng sắp xếp giá
         const formattedData = result.map(item => ({
           ...item,
-          price: item.price ? Number(item.price) : Math.floor(Math.random() * 1000) + 100
+          price: Math.floor(Math.random() * 1000) + 100
         }));
+        
         setData(formattedData);
       } catch (error) {
         console.error("Lỗi khi tải dữ liệu:", error);
@@ -27,12 +28,10 @@ function App() {
     fetchData();
   }, []);
 
-  // Xử lý Filter & Sort
   const processedData = useMemo(() => {
-    // 1. Filter
+    // 1. Filter theo hoten
     let filteredData = data.filter((item) => {
-      const nameMatch = item.name && item.name.toLowerCase().includes(searchQuery.toLowerCase());
-      return nameMatch;
+      return item.hoten && item.hoten.toLowerCase().includes(searchQuery.toLowerCase());
     });
 
     // 2. Sort
@@ -47,15 +46,14 @@ function App() {
             : valueB.localeCompare(valueA);
         } else {
           return sortConfig.direction === 'asc' 
-            ? valueA - valueB 
-            : valueB - valueA;
+            ? Number(valueA) - Number(valueB) 
+            : Number(valueB) - Number(valueA);
         }
       });
     }
     return filteredData;
   }, [data, searchQuery, sortConfig]);
 
-  // Đổi trạng thái sắp xếp
   const handleSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -66,14 +64,13 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-8 text-gray-800">
-      <div className="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold mb-6 text-center text-blue-600">Quản Lý Người Dùng / Sản Phẩm</h1>
+      <div className="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h1 className="text-2xl font-bold mb-6 text-center text-blue-600">Quản Lý Người Dùng</h1>
 
-        {/* Bảng điều khiển: Search & Nút Sort */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
           <input
             type="text"
-            placeholder="🔍 Tìm kiếm theo tên..."
+            placeholder="🔍 Tìm kiếm theo họ tên..."
             className="w-full md:w-1/3 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -81,10 +78,10 @@ function App() {
 
           <div className="flex gap-2">
             <button 
-              onClick={() => handleSort('name')}
+              onClick={() => handleSort('hoten')}
               className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md font-medium transition"
             >
-              Sắp xếp Tên {sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
+              Sắp xếp Tên {sortConfig.key === 'hoten' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
             </button>
             <button 
               onClick={() => handleSort('price')}
@@ -98,7 +95,6 @@ function App() {
         {loading ? (
           <div className="text-center py-10">Đang tải dữ liệu...</div>
         ) : (
-          /* Khung hiển thị dạng Grid (Table-like trên Desktop, Grid trên Mobile) */
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white border border-gray-200 rounded-lg overflow-hidden">
               <thead className="bg-gray-100 border-b">
@@ -106,14 +102,20 @@ function App() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('id')}>
                     ID
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Hình Ảnh
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('hoten')}>
+                    Họ Tên
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('name')}>
-                    Tên
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('diachi')}>
+                    Địa Chỉ
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('quocgia')}>
+                    Quốc Gia
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Điện Thoại
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('price')}>
-                    Giá
+                    Giá (Mock)
                   </th>
                 </tr>
               </thead>
@@ -121,15 +123,15 @@ function App() {
                 {processedData.length > 0 ? processedData.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50 transition">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#{user.id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <img src={user.avatar || 'https://via.placeholder.com/150'} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.hoten}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.diachi}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.quocgia}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.phone}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">${user.price}</td>
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
                       Không tìm thấy dữ liệu phù hợp.
                     </td>
                   </tr>
